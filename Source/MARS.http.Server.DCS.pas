@@ -42,16 +42,21 @@ type
       out AFileName: string; out ABytes: System.TArray<System.Byte>;
       out AContentType: string): Boolean;
     function GetFormParams: string;
-    function GetHeaderParamValue(const AHeaderName: string): string;
+    function GetHeaderParamCount: Integer; inline;
+    function GetHeaderParamIndex(const AName: string): Integer; inline;
+    function GetHeaderParamValue(const AHeaderName: string): string; overload; inline;
+    function GetHeaderParamValue(const AIndex: Integer): string; overload; inline;
     function GetHostName: string;
     function GetMethod: string;
     function GetPort: Integer;
-    function GetQueryParamIndex(const AName: string): Integer;
-    function GetQueryParamValue(const AIndex: Integer): string; overload;
-    function GetQueryParamValue(const AName: string): string; overload;
-    function GetQueryParamCount: Integer;
-    function GetQueryString: string;
-    function GetRawContent: TBytes;
+    function GetDate: TDateTime; inline;
+    function GetQueryParamIndex(const AName: string): Integer; inline;
+    function GetQueryParamValue(const AIndex: Integer): string; overload; inline;
+    function GetQueryParamValue(const AName: string): string; overload; inline;
+    function GetQueryParamName(const AIndex: Integer): string; inline;
+    function GetQueryParamCount: Integer; inline;
+    function GetQueryString: string; inline;
+    function GetRawContent: TBytes; inline;
     function GetRawPath: string;
     procedure CheckWorkaroundForISAPI;
     // -------------------------------------------------------------------------
@@ -256,6 +261,11 @@ begin
   end;
 end;
 
+function TMARSDCSRequest.GetDate: TDateTime;
+begin
+  Result := TCrossHttpUtils.RFC1123_StrToDate(GetHeaderParamValue('Date'));
+end;
+
 function TMARSDCSRequest.GetCookieParamValue(const AIndex: Integer): string;
 begin
   Result := FDCSRequest.Cookies.Items[AIndex].Value;
@@ -431,6 +441,11 @@ begin
   FDCSRequest.Header.GetParamValue(AHeaderName, Result);
 end;
 
+function TMARSDCSRequest.GetHeaderParamValue(const AIndex: Integer): string;
+begin
+  Result := FDCSRequest.Header.Items[AIndex].Value;
+end;
+
 function TMARSDCSRequest.GetHostName: string;
 begin
   Result := FDCSRequest.HostName;
@@ -464,6 +479,11 @@ begin
       Break;
     end;
   end;
+end;
+
+function TMARSDCSRequest.GetQueryParamName(const AIndex: Integer): string;
+begin
+  Result := FDCSRequest.Query.Items[AIndex].Name;
 end;
 
 function TMARSDCSRequest.GetQueryParamValue(const AName: string): string;
@@ -502,6 +522,28 @@ function TMARSDCSRequest.GetRawPath: string;
 begin
 //AM TODO controllare RawPathAndParams?
   Result := FDCSRequest.Path;
+end;
+
+function TMARSDCSRequest.GetHeaderParamCount: Integer;
+begin
+  Result := FDCSRequest.Header.Count;
+end;
+
+function TMARSDCSRequest.GetHeaderParamIndex(const AName: string): Integer;
+var
+  LIndex: Integer;
+  LParam: TNameValue;
+begin
+  Result := -1;
+  for LIndex := 0 to FDCSRequest.Header.Count-1 do
+  begin
+    LParam := FDCSRequest.Header.Items[LIndex];
+    if SameText(LParam.Name, AName) then
+    begin
+      Result := LIndex;
+      Break;
+    end;
+  end;
 end;
 
 { TMARSDCSResponse }

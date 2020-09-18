@@ -65,3 +65,6 @@ Android
 *.res
 *_nonshared.a
 update_from_MARS.bat
+
+# DevExpress Misc Files
+*.skincfg
